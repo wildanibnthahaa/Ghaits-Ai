@@ -29,14 +29,14 @@ else
 fi
 
 echo "==> [3/9] Mengambil kode bridge dari repo (sebagai $USERNAME)"
-sudo -iu "$USERNAME" bash -c "
-  if [ -d '$INSTALL_DIR' ]; then
-    echo '    Folder sudah ada, menarik update...'
-    git -C '$INSTALL_DIR' pull
+sudo -iu "$USERNAME" env INSTALL_DIR="$INSTALL_DIR" REPO_URL="$REPO_URL" bash -c '
+  if [ -d "$INSTALL_DIR" ]; then
+    echo "    Folder sudah ada, menarik update..."
+    git -C "$INSTALL_DIR" pull
   else
-    git clone '$REPO_URL' '$INSTALL_DIR'
+    git clone "$REPO_URL" "$INSTALL_DIR"
   fi
-"
+'
 
 echo "==> [4/9] Menyiapkan MT5 bridge sebagai systemd service"
 sudo tee /etc/systemd/system/ghaits-mt5-bridge-${PROFILE}.service > /dev/null <<UNIT_EOF
