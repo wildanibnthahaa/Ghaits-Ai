@@ -37,7 +37,7 @@ This creates a modular architecture where:
 
 ## 🏗️ Architecture
 
-```text
+
                          ┌──────────────────────┐
                          │      TELEGRAM        │
                          │   Human ↔ AI Control │
@@ -78,7 +78,7 @@ This creates a modular architecture where:
 ✨ Core Features
 
 Component	Purpose
-
+```
 🤖 Hermes Agent	AI agent runtime
 📡 Ghaits Bridge	MT5 ↔ VPS communication layer
 🔌 MCP Server	Exposes MT5 capabilities to Hermes
@@ -88,16 +88,16 @@ Component	Purpose
 🔗 Pairing Code	Controlled EA ↔ Bridge authentication
 📊 MT5 Data	Account, positions, orders and related data
 🧩 Profiles	Multiple isolated Ghaits environments
-
+```
 
 
 ---
 
-🚀 One-Command Installation
+### 🚀 One-Command Installation
 
 > Ubuntu/Debian VPS with sudo access required.
 
-
+```
 
 No manual download.
 
@@ -113,59 +113,47 @@ The installer automatically:
 
 1. Checks basic dependencies.
 
-
 2. Creates the isolated Linux user ghaits-trading.
-
 
 3. Clones or updates the Ghaits repository.
 
-
 4. Creates and starts the MT5 Bridge systemd service.
-
 
 5. Installs Hermes Agent.
 
-
 6. Applies the Telegram dependency fix.
-
 
 7. Installs MCP support.
 
-
 8. Configures the MT5 MCP server.
 
-
 9. Installs the trading SOUL.md template.
-
 
 10. Generates and displays the initial EA pairing code.
 
 
 
 Default Linux user:
-
 ghaits-trading
 
 Default bridge service:
-
 ghaits-mt5-bridge-trading.service
 
 Default ports:
-
 Bridge : 127.0.0.1:18788
 Query  : 127.0.0.1:18789
 
-
+```
 ---
 
-🛠️ Finish Hermes Configuration
+### 🛠️ Finish Hermes Configuration
 
 The infrastructure is installed automatically.
 
 Your AI-provider and Telegram credentials remain under your control.
 
 Enter the trading environment:
-
+```
 sudo -iu ghaits-trading
 
 Configure Hermes:
@@ -181,7 +169,7 @@ Enable lingering so user services can continue after logout:
 
 exit
 sudo loginctl enable-linger ghaits-trading
-
+```
 > 🔐 Keep API keys and Telegram bot tokens private. Never commit credentials into this repository.
 
 
@@ -189,10 +177,10 @@ sudo loginctl enable-linger ghaits-trading
 
 ---
 
-📡 MetaTrader 5 Setup
+### 📡 MetaTrader 5 Setup
 
 Ghaits communicates with MetaTrader 5 through an Expert Advisor.
-
+```
 1. Install the EA
 
 Place the .mq5 Expert Advisor inside:
@@ -230,11 +218,11 @@ sudo journalctl \
   -n 5 \
   --no-pager
 
-
+```
 ---
 
-⚙️ Profiles
-
+### ⚙️ Profiles
+```
 Ghaits supports isolated installation profiles through GHAITS_PROFILE.
 
 The default profile is:
@@ -264,11 +252,11 @@ Bridge ports can also be customized:
 GHAITS_BRIDGE_PORT=18788
 GHAITS_QUERY_PORT=18789
 
-
+```
 ---
 
-🔍 Useful Commands
-
+### 🔍 Useful Commands
+```
 Check bridge status
 
 sudo systemctl status ghaits-mt5-bridge-trading.service
@@ -302,11 +290,11 @@ Enter Ghaits environment
 
 sudo -iu ghaits-trading
 
-
+```
 ---
 
-📁 Repository Structure
-
+## 📁 Repository Structure
+```
 Ghaits-Ai/
 │
 ├── integrations/
@@ -333,14 +321,14 @@ Ghaits-Ai/
 │   └── One-command VPS installer
 │
 └── README.md
-
+```
 
 ---
 
-🔄 Agent Workflow
+## 🔄 Agent Workflow
 
 Ghaits is designed around an agent workflow:
-
+```
 ┌──────────────┐
 │    MARKET    │
 └──────┬───────┘
@@ -374,7 +362,7 @@ Ghaits is designed around an agent workflow:
                           │
                           ▼
                        ANALYZE
-
+```
 The architecture separates:
 
 Trading Terminal
@@ -500,7 +488,7 @@ Coming Next
 Ghaits AI is actively evolving.
 
 The current focus is the core infrastructure:
-
+```
 MetaTrader 5
       ↕
 Ghaits Bridge
@@ -510,7 +498,7 @@ MCP
 Hermes Agent
       ↕
 Telegram
-
+```
 The repository is intended to evolve into a modular trading-agent infrastructure that can be deployed repeatedly across isolated environments.
 
 
