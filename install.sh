@@ -89,14 +89,20 @@ sudo -iu "$USERNAME" bash -c '
 echo "==> [8/9] Menyiapkan MCP server jembatan ke MT5 bridge"
 sudo mkdir -p "/home/${USERNAME}/mt5-mcp"
 sudo cp "${INSTALL_DIR}/integrations/mt5/mcp_server.py" "/home/${USERNAME}/mt5-mcp/mcp_server.py"
+sudo cp -r "${INSTALL_DIR}/integrations/mt5/report" "/home/${USERNAME}/mt5-mcp/report"
 sudo chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}/mt5-mcp"
 
-sudo python3 - "$USERNAME" "$QUERY_PORT" <<'PYEOF'
+echo "==> Nama tampilan untuk kartu laporan PnL (kosongkan untuk pakai default)"
+read -rp "Nama member: " MEMBER_NAME
+MEMBER_NAME="${MEMBER_NAME:-Ghaits Trader}"
+
+sudo python3 - "$USERNAME" "$QUERY_PORT" "$MEMBER_NAME" <<'PYEOF'
 import sys
 from pathlib import Path
 
 username = sys.argv[1]
 query_port = sys.argv[2]
+member_name = sys.argv[3]
 
 config_path = Path(f"/home/{username}/.hermes/config.yaml")
 content = config_path.read_text(encoding="utf-8")
@@ -112,6 +118,7 @@ else:
         "    env:\n"
         '      MT5_QUERY_HOST: "127.0.0.1"\n'
         f'      MT5_QUERY_PORT: "{query_port}"\n'
+        f'      MT5_MEMBER_NAME: "{member_name}"\n'
     )
     config_path.write_text(content + addition, encoding="utf-8")
     print("    mcp_servers berhasil ditambahkan ke config Hermes.")

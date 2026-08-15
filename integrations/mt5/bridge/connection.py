@@ -13,6 +13,7 @@ from .pairing import PairingManager
 from .registry import Client, ClientRegistry
 from .symbols.service import SymbolService
 from .execution import ExecutionService
+from .daily import update_and_get_anchors
 
 log = logging.getLogger("ghaits.mt5.bridge")
 
@@ -253,6 +254,12 @@ class Connection:
 
             if message_type in {"account", "account_ok"}:
                 self.client.latest_account = message
+
+                try:
+                    balance = float(message.get("balance", 0))
+                    update_and_get_anchors(self.client.account_login, balance)
+                except (TypeError, ValueError):
+                    pass
             elif message_type in {"positions", "positions_ok"}:
                 self.client.latest_positions = message.get("positions")
             elif message_type in {"orders", "orders_ok"}:

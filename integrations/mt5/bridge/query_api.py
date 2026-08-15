@@ -78,6 +78,45 @@ class QueryServer:
                         "data": client.latest_orders if client else None,
                         "message": None if client else "no authenticated EA connected",
                     }
+                elif query_type == "pnl_card":
+                    client = self._pick_client(account)
+
+                    if not client or not client.latest_account:
+                        response = {
+                            "type": "error",
+                            "message": "no authenticated EA connected or no account data yet",
+                        }
+                    else:
+                        from .daily import update_and_get_anchors
+
+                        acc = client.latest_account
+                        balance = float(acc.get("balance", 0))
+                        currency = acc.get("currency", "USD")
+                        anchors = update_and_get_anchors(client.account_login, balance)
+
+                        day_open = anchors["day_open_balance"]
+                        all_time_open = anchors["all_time_open_balance"]
+
+                        daily_pnl = balance - day_open
+                        daily_pnl_pct = (daily_pnl / day_open * 100) if day_open else 0.0
+                        total_pnl_pct = (
+                            (balance - all_time_open) / all_time_open * 100
+                        ) if all_time_open else 0.0
+
+                        open_positions = len(client.latest_positions or [])
+
+                        response = {
+                            "type": "pnl_card_ok",
+                            "data": {
+                                "dailyPnl": daily_pnl,
+                                "dailyPnlPct": daily_pnl_pct,
+                                "totalPnlPct": total_pnl_pct,
+                                "openPositions": open_positions,
+                                "currency": currency,
+                                "memberName": client.account_login,
+                                "mode": client.mode or "Live",
+                            },
+                        }
                 elif query_type == "new_pairing":
                     if self.pairing is None:
                         response = {"type": "error", "message": "pairing manager not available"}
