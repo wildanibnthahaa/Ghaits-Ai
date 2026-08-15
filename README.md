@@ -504,7 +504,7 @@ The repository is intended to evolve into a modular trading-agent infrastructure
 
 ---
 
-<div align="center">⚡ Ghaits AI
+<div align="center">⚡ Ghaits x Hermes Agent
 
 Build the infrastructure.
 Connect the agent.
@@ -513,4 +513,4 @@ Control the execution.
 <br>MetaTrader 5 · Ghaits Bridge · MCP · Hermes Agent · Telegram
 
 </div>
-```
+
