@@ -12,7 +12,8 @@ Bridge penghubung antara MetaTrader 5 (EA) dan Hermes Agent (AI assistant) lewat
 ## Cara Install
 1. Siapkan VPS Ubuntu/Debian kosong, akses sudo.
 2. Jalankan:
-   curl -fsSL https://raw.githubusercontent.com/wildanibnthahaa/Ghaits-Ai/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/wildanibnthahaa/Ghaits-Ai/main/install.sh -o install.sh
+   bash install.sh
 3. Ikuti instruksi terakhir untuk isi API key model AI dan bot Telegram sendiri.
 
 ## Upload File EA
