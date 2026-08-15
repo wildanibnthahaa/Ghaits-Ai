@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Ghaits AI
+# ⚡ Ghaits x Hermes Agent
 
 ### Autonomous AI Trading Infrastructure for MetaTrader 5
 
@@ -376,8 +376,8 @@ Each layer has a specific responsibility.
 
 ---
 
-🔐 Security Model
-
+### 🔐 Security Model
+```
 Ghaits is designed around isolation.
 
 Each profile can have its own:
@@ -400,7 +400,7 @@ This helps avoid exposing the MT5 query interface directly to the public interne
 
 > Always review your firewall, credentials, Telegram bot permissions, AI-provider permissions, and execution controls before connecting a live account.
 
-
+```
 
 
 ---
@@ -410,7 +410,7 @@ This helps avoid exposing the MT5 query interface directly to the public interne
 Ghaits AI is software infrastructure for automated trading workflows.
 
 It:
-
+```
 does not guarantee profits;
 
 is not financial advice;
@@ -436,7 +436,7 @@ Verify independent risk controls.
 
 Start with minimal exposure.
 
-
+```
 Never assume an AI agent is inherently safe simply because the infrastructure is automated.
 
 
