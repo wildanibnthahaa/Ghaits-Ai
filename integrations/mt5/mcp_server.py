@@ -66,5 +66,12 @@ async def mt5_status() -> str:
     return json.dumps(result, indent=2)
 
 
+@mcp.tool()
+async def mt5_new_pairing() -> str:
+    """Generate a fresh MT5 EA pairing code. Use this whenever the member asks to connect, reconnect, or pair their MetaTrader EA. Give the returned code directly to the member in chat, and remind them it expires after a limited time and must be entered into InpPairingCode in their EA before re-attaching it."""
+    result = await _query({"type": "new_pairing"})
+    return json.dumps(result, indent=2)
+
+
 if __name__ == "__main__":
     asyncio.run(mcp.run_stdio_async())
