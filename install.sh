@@ -118,6 +118,10 @@ else:
 PYEOF
 sudo chown "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.hermes/config.yaml"
 
+echo "==> [8.5/9] Memasang SOUL.md template asisten trading"
+sudo cp "${INSTALL_DIR}/templates/SOUL_trading.md" "/home/${USERNAME}/.hermes/SOUL.md"
+sudo chown "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.hermes/SOUL.md"
+
 echo "==> [9/9] Mengambil pairing code awal untuk EA"
 PAIRING_LINE="$(sudo journalctl -u "ghaits-mt5-bridge-${PROFILE}.service" -n 20 --no-pager | grep 'pairing code' | tail -1 || true)"
 
