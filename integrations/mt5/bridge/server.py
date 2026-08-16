@@ -24,7 +24,7 @@ class BridgeServer:
         host: str = "127.0.0.1",
         port: int = 18788,
         query_port: int = 18789,
-        dry_run: bool = True,
+        mode: str = "paper",
     ) -> None:
         self.host = host
         self.port = port
@@ -33,9 +33,9 @@ class BridgeServer:
         self.registry = ClientRegistry()
         self.pairing = PairingManager()
         self.pairing_code = self.pairing.create()
-        self.state = BridgeState(dry_run=dry_run)
+        self.state = BridgeState(mode=mode)
         self.symbol_service = SymbolService()
-        self.execution = ExecutionService(dry_run=dry_run)
+        self.execution = ExecutionService(mode=mode)
         self.query_server = QueryServer(self.registry, self.pairing)
 
         self.server: asyncio.AbstractServer | None = None
@@ -49,7 +49,7 @@ class BridgeServer:
             reader=reader,
             writer=writer,
             registry=self.registry,
-            dry_run=self.state.dry_run,
+            mode=self.state.mode,
             pairing=self.pairing,
             symbol_service=self.symbol_service,
             execution=self.execution,
@@ -122,9 +122,10 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--live",
-        action="store_true",
-        help="Reserved for future live execution.",
+        "--mode",
+        choices=("paper", "live"),
+        default="paper",
+        help="Execution mode: paper or live.",
     )
 
     parser.add_argument(
@@ -140,13 +141,11 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
-    # IMPORTANT:
-    # V1 bootstrap remains dry-run even if --live is supplied.
     server = BridgeServer(
         host=args.host,
         port=args.port,
         query_port=args.query_port,
-        dry_run=True,
+        mode=args.mode,
     )
 
     if args.pairing:

@@ -76,11 +76,14 @@ class PairingManager:
         if item is None:
             return False
 
-        if item.used or time.time() >= item.expires_at:
+        if time.time() >= item.expires_at:
             self._codes.pop(code, None)
             return False
 
-        item.used = True
+        # Pairing is intentionally reusable while it is valid.
+        # The EA needs the same credential after a TCP reconnect.
+        item.used = False
+
         return True
 
     def cleanup(self) -> None:
@@ -89,7 +92,7 @@ class PairingManager:
         expired = [
             code
             for code, item in self._codes.items()
-            if item.used or item.expires_at <= now
+            if item.expires_at <= now
         ]
 
         for code in expired:

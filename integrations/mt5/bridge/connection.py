@@ -24,7 +24,7 @@ class Connection:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
         registry: ClientRegistry,
-        dry_run: bool = True,
+        mode: str = "paper",
         pairing: PairingManager | None = None,
         symbol_service: SymbolService | None = None,
         execution: ExecutionService | None = None,
@@ -32,10 +32,14 @@ class Connection:
         self.reader = reader
         self.writer = writer
         self.registry = registry
-        self.dry_run = dry_run
+        self.mode = mode
         self.pairing = pairing or PairingManager()
         self.symbol_service = symbol_service or SymbolService()
-        self.execution = execution or ExecutionService(dry_run=dry_run)
+        self.execution = execution or ExecutionService(mode=mode)
+
+        # Requests sent from the bridge to the EA that are waiting
+        # for an execution response.
+        self._pending_requests: dict[str, asyncio.Future[dict[str, Any]]] = {}
 
         self.client = Client(
             connection_id=uuid.uuid4().hex,
@@ -61,6 +65,59 @@ class Connection:
                 **payload,
             )
         )
+
+    async def send_to_ea(
+        self,
+        message: dict[str, Any],
+        timeout: float = 15.0,
+    ) -> dict[str, Any]:
+        """Send a command to the connected EA and wait for its response."""
+
+        request_id = str(message.get("id", "")).strip()
+
+        if not request_id:
+            raise ValueError("EA command requires a request id")
+
+        if not self.client.authenticated:
+            raise RuntimeError("EA is not authenticated")
+
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future[dict[str, Any]] = loop.create_future()
+
+        self._pending_requests[request_id] = future
+
+        try:
+            await self.send(message)
+
+            return await asyncio.wait_for(
+                future,
+                timeout=timeout,
+            )
+
+        except asyncio.TimeoutError as exc:
+            raise RuntimeError(
+                f"EA execution timeout for request {request_id}"
+            ) from exc
+
+        finally:
+            self._pending_requests.pop(request_id, None)
+
+    def resolve_pending_response(
+        self,
+        message: dict[str, Any],
+    ) -> bool:
+        request_id = str(message.get("id", "")).strip()
+
+        if not request_id:
+            return False
+
+        future = self._pending_requests.get(request_id)
+
+        if future is None or future.done():
+            return False
+
+        future.set_result(message)
+        return True
 
     async def handle(
         self,
@@ -134,23 +191,74 @@ class Connection:
             broker_symbol = mapping["mappings"][symbol]
             resolution_method = mapping["methods"][symbol]
 
+            order_type = str(
+                message.get("order_type", "market")
+            ).strip().lower()
+
+            price = message.get("price")
+            sl = message.get("sl")
+            tp = message.get("tp")
+            comment = str(
+                message.get("comment", "ghaits")
+            )
+
+            if self.mode == "live":
+                if order_type != "market":
+                    await self.reply(
+                        "error",
+                        request_id,
+                        code="unsupported_order_type",
+                        message="live EA execution currently supports market orders only",
+                    )
+                    return
+
+                ea_command = make_message(
+                    "place_order",
+                    request_id,
+                    symbol=broker_symbol,
+                    side=side,
+                    volume=volume,
+                    order_type=order_type,
+                    price=price,
+                    sl=sl,
+                    tp=tp,
+                    comment=comment,
+                )
+
+                try:
+                    result = await self.send_to_ea(
+                        ea_command,
+                        timeout=15.0,
+                    )
+                except (RuntimeError, ValueError) as exc:
+                    await self.reply(
+                        "error",
+                        request_id,
+                        code="ea_execution_failed",
+                        message=str(exc),
+                    )
+                    return
+
+                result["canonical_symbol"] = symbol
+                result["broker_symbol"] = broker_symbol
+                result["resolution_method"] = resolution_method
+
+                await self.send(result)
+                return
+
             try:
                 result = self.execution.place_order(
                     connection_id=self.client.connection_id,
                     symbol=broker_symbol,
                     side=side,
                     volume=volume,
-                    order_type=str(
-                        message.get("order_type", "market")
-                    ),
-                    price=message.get("price"),
-                    sl=message.get("sl"),
-                    tp=message.get("tp"),
-                    comment=str(
-                        message.get("comment", "ghaits")
-                    ),
+                    order_type=order_type,
+                    price=price,
+                    sl=sl,
+                    tp=tp,
+                    comment=comment,
                 )
-            except (TypeError, ValueError) as exc:
+            except (TypeError, ValueError, RuntimeError) as exc:
                 await self.reply(
                     "error",
                     request_id,
@@ -272,27 +380,6 @@ class Connection:
             )
             return
 
-        # Execution commands are deliberately disabled during bootstrap.
-        if message_type in {
-            "place_order",
-            "modify_order",
-            "cancel_order",
-            "close_order",
-            "modify_sltp",
-            "break_even",
-            "close_all",
-            "cancel_all",
-        }:
-            await self.reply(
-                "dry_run",
-                request_id,
-                accepted=True,
-                executed=False,
-                dry_run=True,
-                message="execution layer not enabled yet",
-            )
-            return
-
         await self.reply(
             "error",
             request_id,
@@ -356,6 +443,7 @@ class Connection:
 
         self.client.authenticated = True
         self.client.paired = True
+        self.client.mode = self.mode
 
         await self.reply(
             "auth_ok",
@@ -366,7 +454,7 @@ class Connection:
             broker=self.client.broker,
             server=self.client.server,
             symbols=self.client.symbols,
-            dry_run=self.dry_run,
+            mode=self.mode,
         )
 
         log.info(
@@ -403,6 +491,11 @@ class Connection:
 
                 try:
                     message = decode(clean_line)
+
+                    # First, resolve responses belonging to commands
+                    # previously sent from the bridge to the EA.
+                    if self.resolve_pending_response(message):
+                        continue
 
                     await self.handle(message)
 

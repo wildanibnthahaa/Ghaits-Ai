@@ -6,15 +6,24 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+VALID_MODES = {"paper", "live"}
+
+
 @dataclass
 class BridgeState:
-    dry_run: bool = True
+    mode: str = "paper"
     ready: bool = False
     clients: dict[str, dict[str, Any]] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        self.mode = str(self.mode).strip().lower()
+
+        if self.mode not in VALID_MODES:
+            raise ValueError(f"unsupported bridge mode: {self.mode}")
+
     def snapshot(self) -> dict[str, Any]:
         return {
-            "dry_run": self.dry_run,
+            "mode": self.mode,
             "ready": self.ready,
             "clients": self.clients,
         }
