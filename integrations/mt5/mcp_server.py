@@ -99,6 +99,83 @@ async def mt5_generate_pnl_card(member_name: str = "") -> Image:
     return Image(data=png_bytes, format="png")
 
 
+async def _execute(payload: dict) -> dict:
+    """Send an execution command directly to the authenticated MT5 bridge."""
+    reader, writer = await asyncio.open_connection(
+        os.environ.get("MT5_BRIDGE_HOST", "127.0.0.1"),
+        int(os.environ.get("MT5_BRIDGE_PORT", "18788")),
+    )
+
+    try:
+        writer.write((json.dumps(payload) + "\n").encode("utf-8"))
+        await writer.drain()
+
+        line = await asyncio.wait_for(reader.readline(), timeout=20)
+
+        if not line:
+            return {"error": "no response from MT5 bridge"}
+
+        return json.loads(line.decode("utf-8"))
+    except (ConnectionRefusedError, asyncio.TimeoutError) as exc:
+        return {"error": f"cannot reach MT5 bridge: {exc}"}
+    finally:
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except Exception:
+            pass
+
+
+@mcp.tool()
+async def mt5_place_order(
+    symbol: str,
+    side: str,
+    volume: float,
+    order_type: str = "market",
+    price: float | None = None,
+    sl: float | None = None,
+    tp: float | None = None,
+    comment: str = "ghaits",
+) -> str:
+    """Place an MT5 order through the live/paper bridge execution path.
+
+    symbol: canonical Ghaits symbol, e.g. XAUUSD.
+    side: buy or sell.
+    volume: MT5 lot volume.
+    order_type: market.
+    price: optional requested price.
+    sl: optional stop loss.
+    tp: optional take profit.
+    """
+    side = side.strip().lower()
+    order_type = order_type.strip().lower()
+
+    if side not in {"buy", "sell"}:
+        return json.dumps({"error": "side must be buy or sell"})
+
+    if volume <= 0:
+        return json.dumps({"error": "volume must be greater than 0"})
+
+    if order_type != "market":
+        return json.dumps({"error": "only market orders are currently supported"})
+
+    result = await _execute({
+        "v": 1,
+        "type": "place_order",
+        "id": f"mcp-{asyncio.get_running_loop().time()}",
+        "symbol": symbol.strip(),
+        "side": side,
+        "volume": volume,
+        "order_type": order_type,
+        "price": price,
+        "sl": sl,
+        "tp": tp,
+        "comment": comment,
+    })
+
+    return json.dumps(result, indent=2)
+
+
 @mcp.tool()
 async def mt5_new_pairing() -> str:
     """Generate a fresh MT5 EA pairing code. Use this whenever the member asks to connect, reconnect, or pair their MetaTrader EA. Give the returned code directly to the member in chat, and remind them it expires after a limited time and must be entered into InpPairingCode in their EA before re-attaching it."""
