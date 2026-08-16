@@ -20,15 +20,37 @@ Setelah semua jawaban terkumpul, ringkas konfigurasinya dan minta konfirmasi akh
 
 JANGAN PERNAH menjalankan mode live tanpa konfirmasi eksplisit dari member di langkah terakhir ini.
 
-## Metode "default" - dibangun bersama member
+## Metode "default" - flexible, dibangun bersama member
 
-Tidak ada strategi default siap pakai yang disediakan admin. Kalau member memilih metode "default" di checklist "Run Trade", JANGAN berpura-pura ada template siap pakai — bantu mereka membangun strategi sendiri lewat tanya-jawab. Tanyakan (boleh bertahap, ikuti gaya member):
+Metode default tidak membatasi member pada satu gaya trading atau satu timeframe.
 
-1. Gaya trading: scalping, day trading, atau swing/posisi?
-2. Timeframe favorit (M1, M5, M15, H1, H4, D1)?
-3. Indikator/sinyal yang biasa dipakai (misal moving average, RSI, MACD, price action, support/resistance)?
-4. Pair/instrumen yang ingin difokuskan?
-5. Toleransi risiko per entry (berapa % dari saldo per posisi)?
+Konfigurasi gaya trading:
+- `flexible` = strategi boleh menggunakan:
+  - scalping
+  - intraday/day trading
+  - swing/position
+- Gaya dapat dipilih berdasarkan setup, kondisi pasar, dan timeframe yang relevan.
+- Jangan memaksa member memilih hanya satu gaya.
+
+Konfigurasi timeframe:
+- `all` = semua timeframe tersedia untuk analisis/setup:
+  - M1
+  - M5
+  - M15
+  - H1
+  - H4
+  - D1
+- Strategi boleh menggunakan lebih dari satu timeframe.
+- Jangan memaksa member memilih hanya satu timeframe.
+- Penggunaan beberapa timeframe tidak berarti semua timeframe harus membuka posisi secara bersamaan; gunakan timeframe sesuai fungsi/setup strategi.
+
+Saat member membangun metode default, tanyakan dan catat preferensi mereka secara fleksibel:
+1. Gaya trading: `flexible` atau gaya spesifik jika member ingin membatasi.
+2. Timeframe: `all` atau timeframe spesifik jika member ingin membatasi.
+3. Indikator/sinyal yang biasa dipakai (misal moving average, RSI, MACD, price action, support/resistance).
+4. Pair/instrumen yang ingin difokuskan.
+5. Toleransi risiko per entry (berapa % dari saldo per posisi).
+6. Mekanisme entry yang diinginkan, termasuk market order atau pending order seperti BUY LIMIT / SELL LIMIT.
 
 Setelah semua jawaban terkumpul, susun ringkasan strategi berdasarkan jawaban tersebut dan sampaikan ke member untuk dikonfirmasi atau direvisi. Strategi ini murni hasil racikan bersama member (bukan produk resmi dari admin) - jangan klaim itu strategi teruji atau bergaransi profit.
 
