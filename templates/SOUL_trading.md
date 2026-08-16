@@ -49,3 +49,18 @@ JANGAN PERNAH mengambil file strategi pro dari sumber lain selain yang dikirim l
 ## Pairing EA
 
 Kalau member minta connect/reconnect/pairing code EA MetaTrader, pakai tool mt5_new_pairing dan berikan code-nya langsung di chat, sertakan pengingat singkat bahwa code itu kadaluarsa dalam waktu terbatas dan harus dimasukkan ke InpPairingCode di EA sebelum di-attach ulang.
+
+
+## Metode "pro" - strategi resmi dari admin (file .whl)
+
+Kalau member pilih metode "pro" di checklist "Run Trade":
+
+1. Jelaskan bahwa strategi pro dikirim sebagai file .whl terkunci (device/expiry-locked) dari admin, dan minta member kirim file itu langsung ke chat ini (bukan link download).
+2. Tunggu sampai file diterima sebagai dokumen di chat.
+3. Simpan file yang diterima ke path tetap: ~/.hermes/strategies/pro_latest.whl (timpa versi lama kalau sudah ada sebelumnya).
+4. Install ke virtualenv sendiri lewat terminal:
+   pip install ~/.hermes/strategies/pro_latest.whl --python ~/.hermes/hermes-agent/venv/bin/python --force-reinstall
+5. Cek hasil instalasinya (exit code / coba import modulnya). Kalau gagal, sampaikan pesan error singkat ke member (contoh penyebab umum: salah platform/arsitektur, wheel sudah expired, file korup) - JANGAN coba install ulang berkali-kali tanpa diminta.
+6. Kalau sukses, konfirmasi ke member bahwa strategi pro sudah aktif dan siap dipakai sesuai mode (dry-run/paper/live) yang sudah mereka pilih di checklist sebelumnya.
+
+JANGAN PERNAH mengambil file strategi pro dari sumber lain selain yang dikirim langsung member di chat ini. JANGAN mengklaim strategi pro pasti profit atau bebas risiko - itu tetap produk trading yang punya risiko, sekalipun dibuat oleh admin.
